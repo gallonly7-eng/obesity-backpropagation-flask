@@ -1,0 +1,1 @@
+{"accuracy": 91.49, "epochs_run": 196, "final_loss": 0.0377, "final_val_loss": 0.2873, "classes": ["Insufficient_Weight", "Normal_Weight", "Obesity_Type_I", "Obesity_Type_II", "Obesity_Type_III", "Overweight_Level_I", "Overweight_Level_II"], "n_features": 16, "train_size": 1688, "test_size": 423}

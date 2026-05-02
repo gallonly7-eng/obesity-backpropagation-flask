@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ObesityAI — Prediksi Risiko Obesitas</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg: #0f1117;
+      --card: #1a1d2e;
+      --border: #2d3748;
+      --accent: #667eea;
+      --accent2: #764ba2;
+      --text: #e2e8f0;
+      --muted: #a0aec0;
+    }
+    body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; min-height: 100vh; }
+
+    /* Navbar */
+    .navbar { background: rgba(26,29,46,.95); border-bottom: 1px solid var(--border); backdrop-filter: blur(8px); }
+    .navbar-brand { font-weight: 700; font-size: 1.3rem; background: linear-gradient(135deg,#667eea,#764ba2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .nav-link { color: var(--muted) !important; transition: color .2s; }
+    .nav-link:hover { color: white !important; }
+
+    /* Hero */
+    .hero { background: linear-gradient(135deg, #0f1117 0%, #1a1d2e 50%, #0f1117 100%); padding: 60px 0 40px; text-align: center; position: relative; overflow: hidden; }
+    .hero::before { content:''; position:absolute; top:-100px; left:50%; transform:translateX(-50%); width:600px; height:600px; background: radial-gradient(circle, rgba(102,126,234,.15) 0%, transparent 70%); pointer-events:none; }
+    .hero h1 { font-size: 2.5rem; font-weight: 700; margin-bottom: .5rem; }
+    .hero h1 span { background: linear-gradient(135deg,#667eea,#a78bfa); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+    .hero p { color: var(--muted); font-size: 1.05rem; }
+
+    /* Stats */
+    .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px 24px; text-align: center; }
+    .stat-val { font-size: 2rem; font-weight: 700; background: linear-gradient(135deg,#667eea,#a78bfa); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+    .stat-lbl { color: var(--muted); font-size: .85rem; margin-top: 4px; }
+
+    /* Form Card */
+    .form-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 32px; }
+    .section-title { font-size: 1rem; font-weight: 600; color: var(--accent); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+    .form-label { color: var(--muted); font-size: .875rem; margin-bottom: 4px; }
+    .form-control, .form-select {
+      background: #0f1117; border: 1px solid var(--border); color: var(--text); border-radius: 8px;
+      padding: 10px 14px; font-size: .9rem; transition: border-color .2s, box-shadow .2s;
+    }
+    .form-control:focus, .form-select:focus {
+      background: #0f1117; color: var(--text); border-color: var(--accent); box-shadow: 0 0 0 3px rgba(102,126,234,.2);
+    }
+    .form-control option, .form-select option { background: #1a1d2e; }
+
+    /* Range slider */
+    .form-range { accent-color: var(--accent); }
+    .range-val { font-weight: 600; color: var(--accent); }
+
+    /* Submit button */
+    .btn-predict {
+      background: linear-gradient(135deg, #667eea, #764ba2); border: none; color: white;
+      padding: 14px 32px; font-size: 1.05rem; font-weight: 600; border-radius: 10px;
+      width: 100%; cursor: pointer; transition: opacity .2s, transform .1s;
+    }
+    .btn-predict:hover { opacity: .9; transform: translateY(-1px); }
+    .btn-predict:active { transform: translateY(0); }
+
+    /* Result */
+    #result-box { display: none; background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 32px; }
+    .result-badge { display: inline-block; padding: 8px 20px; border-radius: 50px; font-weight: 700; font-size: 1.1rem; margin-bottom: 12px; }
+    .result-bmi { background: rgba(102,126,234,.15); border: 1px solid rgba(102,126,234,.3); border-radius: 8px; padding: 12px 20px; display: inline-block; }
+    .tip-item { background: rgba(255,255,255,.04); border-radius: 8px; padding: 10px 14px; margin-bottom: 8px; font-size: .9rem; }
+    .tip-item::before { content: '→ '; color: var(--accent); font-weight: 700; }
+
+    /* Probability bars */
+    .prob-bar-wrap { margin-bottom: 8px; }
+    .prob-label { font-size: .8rem; color: var(--muted); margin-bottom: 3px; display: flex; justify-content: space-between; }
+    .prob-bar-bg { background: rgba(255,255,255,.06); border-radius: 4px; height: 8px; overflow: hidden; }
+    .prob-bar-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, #667eea, #a78bfa); transition: width .8s ease; }
+
+    /* Info tooltip */
+    .field-hint { font-size: .78rem; color: #718096; margin-top: 2px; }
+
+    /* Loading spinner */
+    #loading { display: none; text-align: center; padding: 40px; }
+    .spinner { width: 40px; height: 40px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin .8s linear infinite; margin: 0 auto 12px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    footer { border-top: 1px solid var(--border); padding: 24px 0; color: var(--muted); font-size: .85rem; text-align: center; margin-top: 60px; }
+  </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg sticky-top">
+  <div class="container">
+    <a class="navbar-brand" href="/">🧠 ObesityAI</a>
+    <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#nav">
+      <span style="color:var(--muted)">☰</span>
+    </button>
+    <div class="collapse navbar-collapse" id="nav">
+      <ul class="navbar-nav ms-auto gap-2">
+        <li class="nav-item"><a class="nav-link active" href="/">Prediksi</a></li>
+        <li class="nav-item"><a class="nav-link" href="/about">Tentang Model</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="container">
+    <h1>Prediksi <span>Risiko Obesitas</span></h1>
+    <p>Model Backpropagation Neural Network — Dataset Kaggle (2.111 data)</p>
+    <div class="row justify-content-center mt-4 g-3">
+      <div class="col-6 col-md-2">
+        <div class="stat-card">
+          <div class="stat-val">{{ metrics.accuracy }}%</div>
+          <div class="stat-lbl">Akurasi</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-2">
+        <div class="stat-card">
+          <div class="stat-val">{{ metrics.epochs_run }}</div>
+          <div class="stat-lbl">Epoch</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-2">
+        <div class="stat-card">
+          <div class="stat-val">2111</div>
+          <div class="stat-lbl">Dataset</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-2">
+        <div class="stat-card">
+          <div class="stat-val">7</div>
+          <div class="stat-lbl">Kelas</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Main -->
+<div class="container py-5">
+  <div class="row g-4">
+
+    <!-- Form -->
+    <div class="col-lg-7">
+      <div class="form-card">
+        <h5 class="mb-4" style="font-weight:700">📋 Isi Data Diri Anda</h5>
+
+        <!-- Data Fisik -->
+        <div class="section-title">Data Fisik</div>
+        <div class="row g-3 mb-4">
+          <div class="col-6">
+            <label class="form-label">Usia (tahun)</label>
+            <input type="number" class="form-control" id="age" value="25" min="10" max="80"/>
+          </div>
+          <div class="col-6">
+            <label class="form-label">Jenis Kelamin</label>
+            <select class="form-select" id="gender">
+              <option value="Male">Laki-laki</option>
+              <option value="Female">Perempuan</option>
+            </select>
+          </div>
+          <div class="col-6">
+            <label class="form-label">Tinggi Badan (cm)</label>
+            <input type="number" class="form-control" id="height" value="170" min="140" max="210"/>
+          </div>
+          <div class="col-6">
+            <label class="form-label">Berat Badan (kg)</label>
+            <input type="number" class="form-control" id="weight" value="65" min="30" max="200"/>
+          </div>
+          <div class="col-12">
+            <label class="form-label">Riwayat Keluarga Obesitas</label>
+            <select class="form-select" id="family_history">
+              <option value="yes">Ya, ada riwayat keluarga</option>
+              <option value="no">Tidak ada riwayat</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Pola Makan -->
+        <div class="section-title">Pola Makan</div>
+        <div class="row g-3 mb-4">
+          <div class="col-6">
+            <label class="form-label">Sering Makan Tinggi Kalori? (FAVC)</label>
+            <select class="form-select" id="favc">
+              <option value="yes">Ya</option>
+              <option value="no">Tidak</option>
+            </select>
+          </div>
+          <div class="col-6">
+            <label class="form-label">Konsumsi Sayur (FCVC)</label>
+            <select class="form-select" id="fcvc">
+              <option value="1">Jarang (1)</option>
+              <option value="2" selected>Kadang (2)</option>
+              <option value="3">Sering (3)</option>
+            </select>
+            <div class="field-hint">Frekuensi makan sayur/buah</div>
+          </div>
+          <div class="col-6">
+            <label class="form-label">Jumlah Makan Utama / Hari (NCP)</label>
+            <select class="form-select" id="ncp">
+              <option value="1">1x</option>
+              <option value="2">2x</option>
+              <option value="3" selected>3x</option>
+              <option value="4">4x atau lebih</option>
+            </select>
+          </div>
+          <div class="col-6">
+            <label class="form-label">Makan di Antara Waktu Makan? (CAEC)</label>
+            <select class="form-select" id="caec">
+              <option value="no">Tidak pernah</option>
+              <option value="Sometimes" selected>Kadang-kadang</option>
+              <option value="Frequently">Sering</option>
+              <option value="Always">Selalu</option>
+            </select>
+          </div>
+          <div class="col-6">
+            <label class="form-label">Konsumsi Alkohol (CALC)</label>
+            <select class="form-select" id="calc">
+              <option value="no">Tidak pernah</option>
+              <option value="Sometimes" selected>Kadang</option>
+              <option value="Frequently">Sering</option>
+              <option value="Always">Selalu</option>
+            </select>
+          </div>
+          <div class="col-6">
+            <label class="form-label">Pantau Kalori Harian? (SCC)</label>
+            <select class="form-select" id="scc">
+              <option value="no" selected>Tidak</option>
+              <option value="yes">Ya</option>
+            </select>
+          </div>
+          <div class="col-12">
+            <label class="form-label">Konsumsi Air Putih / Hari: <span class="range-val" id="ch2o-val">2</span> liter</label>
+            <input type="range" class="form-range" id="ch2o" min="1" max="3" step="1" value="2"
+              oninput="document.getElementById('ch2o-val').textContent=this.value"/>
+          </div>
+        </div>
+
+        <!-- Gaya Hidup -->
+        <div class="section-title">Gaya Hidup</div>
+        <div class="row g-3 mb-4">
+          <div class="col-6">
+            <label class="form-label">Merokok?</label>
+            <select class="form-select" id="smoke">
+              <option value="no" selected>Tidak</option>
+              <option value="yes">Ya</option>
+            </select>
+          </div>
+          <div class="col-6">
+            <label class="form-label">Transportasi Utama (MTRANS)</label>
+            <select class="form-select" id="mtrans">
+              <option value="Public_Transportation" selected>Transportasi Umum</option>
+              <option value="Walking">Jalan Kaki</option>
+              <option value="Automobile">Mobil</option>
+              <option value="Motorbike">Motor</option>
+              <option value="Bike">Sepeda</option>
+            </select>
+          </div>
+          <div class="col-12">
+            <label class="form-label">Frekuensi Aktivitas Fisik / Minggu (FAF): <span class="range-val" id="faf-val">1</span>x</label>
+            <input type="range" class="form-range" id="faf" min="0" max="3" step="1" value="1"
+              oninput="document.getElementById('faf-val').textContent=this.value"/>
+            <div class="field-hint">0=Tidak pernah, 1=1-2 hari, 2=3-4 hari, 3=5+ hari</div>
+          </div>
+          <div class="col-12">
+            <label class="form-label">Penggunaan Gadget / Hari (TUE): <span class="range-val" id="tue-val">1</span> jam</label>
+            <input type="range" class="form-range" id="tue" min="0" max="2" step="1" value="1"
+              oninput="document.getElementById('tue-val').textContent=this.value"/>
+            <div class="field-hint">0=<2 jam, 1=3-5 jam, 2=>5 jam</div>
+          </div>
+        </div>
+
+        <button class="btn-predict" onclick="doPredikt()">🔍 Analisis Sekarang</button>
+      </div>
+    </div>
+
+    <!-- Result -->
+    <div class="col-lg-5">
+      <div id="loading">
+        <div class="spinner"></div>
+        <p style="color:var(--muted)">Memproses dengan Neural Network...</p>
+      </div>
+
+      <div id="result-box">
+        <h5 style="font-weight:700; margin-bottom:20px">📊 Hasil Analisis</h5>
+
+        <div class="text-center mb-4">
+          <div style="font-size:3rem" id="res-icon"></div>
+          <div class="result-badge mt-2" id="res-badge"></div>
+          <p id="res-desc" style="color:var(--muted); font-size:.9rem; margin-top:8px"></p>
+        </div>
+
+        <div class="result-bmi mb-4" style="width:100%">
+          <div class="row text-center">
+            <div class="col-6">
+              <div style="font-size:1.5rem; font-weight:700; color:#667eea" id="res-bmi">—</div>
+              <div style="font-size:.8rem; color:var(--muted)">BMI</div>
+            </div>
+            <div class="col-6">
+              <div style="font-size:1.5rem; font-weight:700; color:#a78bfa" id="res-conf">—</div>
+              <div style="font-size:.8rem; color:var(--muted)">Keyakinan Model</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mb-4">
+          <div class="section-title">Distribusi Probabilitas</div>
+          <div id="prob-bars"></div>
+        </div>
+
+        <div>
+          <div class="section-title">💡 Rekomendasi</div>
+          <div id="res-tips"></div>
+        </div>
+      </div>
+
+      <!-- Placeholder sebelum predict -->
+      <div id="placeholder" class="form-card text-center" style="padding:40px">
+        <div style="font-size:3rem; margin-bottom:12px">🤖</div>
+        <p style="color:var(--muted)">Isi form di sebelah kiri dan klik <b>Analisis Sekarang</b> untuk mendapatkan prediksi risiko obesitas.</p>
+        <hr style="border-color:var(--border); margin: 20px 0"/>
+        <p style="font-size:.8rem; color:#4a5568">Model ini dilatih menggunakan dataset Kaggle (2111 sampel) dengan algoritma <b>Backpropagation</b> from scratch menggunakan NumPy. Akurasi: <b>{{ metrics.accuracy }}%</b></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Training Chart -->
+  <div class="row mt-5">
+    <div class="col-12">
+      <div class="form-card">
+        <h6 style="font-weight:700; margin-bottom:16px">📈 Grafik Training Model</h6>
+        <img src="/static/training_history.png" alt="Training History" style="width:100%; border-radius:8px; max-width:800px; display:block; margin:0 auto"/>
+        <p style="text-align:center; color:var(--muted); font-size:.8rem; margin-top:12px">
+          Training berhenti di epoch {{ metrics.epochs_run }} (Early Stopping) — Loss akhir: {{ metrics.final_val_loss }}
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="container">
+    ObesityAI &mdash; Tugas 7 Backpropagation &mdash; Modul Kecerdasan Buatan<br/>
+    <span style="font-size:.75rem">Dataset: <a href="https://www.kaggle.com/datasets/fatemehmehrparvar/obesity-levels" target="_blank" style="color:var(--accent)">Kaggle Obesity Levels</a></span>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+function gv(id){ return document.getElementById(id).value; }
+
+async function doPredikt(){
+  document.getElementById('placeholder').style.display = 'none';
+  document.getElementById('result-box').style.display  = 'none';
+  document.getElementById('loading').style.display     = 'block';
+
+  const payload = {
+    age: gv('age'), gender: gv('gender'),
+    height: gv('height'), weight: gv('weight'),
+    calc: gv('calc'), favc: gv('favc'),
+    fcvc: gv('fcvc'), ncp: gv('ncp'),
+    scc: gv('scc'), smoke: gv('smoke'),
+    ch2o: gv('ch2o'), family_history: gv('family_history'),
+    faf: gv('faf'), tue: gv('tue'),
+    caec: gv('caec'), mtrans: gv('mtrans'),
+  };
+
+  try {
+    const res = await fetch('/predict', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    document.getElementById('loading').style.display = 'none';
+
+    if(data.success){
+      document.getElementById('result-box').style.display = 'block';
+      document.getElementById('res-icon').textContent  = data.icon;
+      const badge = document.getElementById('res-badge');
+      badge.textContent = data.result;
+      badge.style.background = data.color + '30';
+      badge.style.color = data.color;
+      badge.style.border = `1px solid ${data.color}60`;
+      document.getElementById('res-desc').textContent = data.desc;
+      document.getElementById('res-bmi').textContent  = data.bmi;
+      document.getElementById('res-conf').textContent = data.confidence + '%';
+
+      // Probability bars
+      const pb = document.getElementById('prob-bars');
+      pb.innerHTML = '';
+      const sorted = Object.entries(data.probability).sort((a,b)=>b[1]-a[1]);
+      sorted.forEach(([cls, pct]) => {
+        pb.innerHTML += `
+          <div class="prob-bar-wrap">
+            <div class="prob-label"><span>${cls}</span><span>${pct}%</span></div>
+            <div class="prob-bar-bg"><div class="prob-bar-fill" style="width:${pct}%"></div></div>
+          </div>`;
+      });
+
+      // Tips
+      const tips = document.getElementById('res-tips');
+      tips.innerHTML = data.tips.map(t => `<div class="tip-item">${t}</div>`).join('');
+    } else {
+      alert('Error: ' + data.error);
+      document.getElementById('placeholder').style.display = 'block';
+    }
+  } catch(e){
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('placeholder').style.display = 'block';
+    alert('Gagal menghubungi server: ' + e.message);
+  }
+}
+</script>
+</body>
+</html>

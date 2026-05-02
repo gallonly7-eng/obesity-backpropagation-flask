@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Tentang Model — ObesityAI</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    :root{ --bg:#0f1117; --card:#1a1d2e; --border:#2d3748; --accent:#667eea; --text:#e2e8f0; --muted:#a0aec0; }
+    body{ background:var(--bg); color:var(--text); font-family:'Inter',sans-serif; }
+    .navbar{ background:rgba(26,29,46,.95); border-bottom:1px solid var(--border); }
+    .navbar-brand{ font-weight:700; font-size:1.3rem; background:linear-gradient(135deg,#667eea,#764ba2); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+    .nav-link{ color:var(--muted) !important; }
+    .nav-link:hover{ color:white !important; }
+    .card-box{ background:var(--card); border:1px solid var(--border); border-radius:16px; padding:28px; margin-bottom:24px; }
+    .badge-class{ display:inline-block; padding:4px 12px; border-radius:20px; font-size:.8rem; font-weight:600; margin:3px; }
+    .arch-layer{ background:rgba(102,126,234,.1); border:1px solid rgba(102,126,234,.3); border-radius:8px; padding:12px 20px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; }
+    .layer-name{ font-weight:600; font-size:.9rem; }
+    .layer-detail{ color:var(--muted); font-size:.8rem; }
+    .metric-big{ font-size:2.2rem; font-weight:700; background:linear-gradient(135deg,#667eea,#a78bfa); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+    footer{ border-top:1px solid var(--border); padding:20px 0; color:var(--muted); font-size:.85rem; text-align:center; margin-top:40px; }
+  </style>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg sticky-top">
+  <div class="container">
+    <a class="navbar-brand" href="/">🧠 ObesityAI</a>
+    <div class="collapse navbar-collapse">
+      <ul class="navbar-nav ms-auto gap-2">
+        <li class="nav-item"><a class="nav-link" href="/">Prediksi</a></li>
+        <li class="nav-item"><a class="nav-link active" href="/about">Tentang Model</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<div class="container py-5">
+  <h2 style="font-weight:700; margin-bottom:8px">📚 Tentang Model</h2>
+  <p style="color:var(--muted); margin-bottom:32px">Implementasi Backpropagation Neural Network — Tugas 7 Modul Kecerdasan Buatan</p>
+
+  <div class="row g-4">
+
+    <!-- Metrics -->
+    <div class="col-md-4">
+      <div class="card-box text-center">
+        <div class="metric-big">{{ metrics.accuracy }}%</div>
+        <div style="color:var(--muted); font-size:.9rem">Akurasi Model</div>
+      </div>
+      <div class="card-box text-center">
+        <div class="metric-big">{{ metrics.epochs_run }}</div>
+        <div style="color:var(--muted); font-size:.9rem">Epoch (Early Stopping)</div>
+      </div>
+      <div class="card-box text-center">
+        <div class="metric-big">{{ metrics.final_val_loss }}</div>
+        <div style="color:var(--muted); font-size:.9rem">Validation Loss Akhir</div>
+      </div>
+    </div>
+
+    <!-- Arsitektur -->
+    <div class="col-md-8">
+      <div class="card-box">
+        <h6 style="font-weight:700; margin-bottom:16px">🏗️ Arsitektur Neural Network</h6>
+        <div class="arch-layer">
+          <div><div class="layer-name">Input Layer</div><div class="layer-detail">16 fitur dari dataset obesity.csv</div></div>
+          <span style="color:#667eea; font-weight:700">16 neuron</span>
+        </div>
+        <div style="text-align:center; color:var(--muted); margin:4px 0; font-size:.8rem">↓ ReLU</div>
+        <div class="arch-layer">
+          <div><div class="layer-name">Hidden Layer 1</div><div class="layer-detail">Aktivasi ReLU</div></div>
+          <span style="color:#667eea; font-weight:700">64 neuron</span>
+        </div>
+        <div style="text-align:center; color:var(--muted); margin:4px 0; font-size:.8rem">↓ ReLU</div>
+        <div class="arch-layer">
+          <div><div class="layer-name">Hidden Layer 2</div><div class="layer-detail">Aktivasi ReLU</div></div>
+          <span style="color:#667eea; font-weight:700">32 neuron</span>
+        </div>
+        <div style="text-align:center; color:var(--muted); margin:4px 0; font-size:.8rem">↓ ReLU</div>
+        <div class="arch-layer">
+          <div><div class="layer-name">Hidden Layer 3</div><div class="layer-detail">Aktivasi ReLU</div></div>
+          <span style="color:#667eea; font-weight:700">16 neuron</span>
+        </div>
+        <div style="text-align:center; color:var(--muted); margin:4px 0; font-size:.8rem">↓ Softmax</div>
+        <div class="arch-layer">
+          <div><div class="layer-name">Output Layer</div><div class="layer-detail">7 kelas klasifikasi</div></div>
+          <span style="color:#68d391; font-weight:700">7 neuron</span>
+        </div>
+      </div>
+
+      <!-- Dataset info -->
+      <div class="card-box">
+        <h6 style="font-weight:700; margin-bottom:12px">📊 Dataset</h6>
+        <p style="color:var(--muted); font-size:.9rem; margin-bottom:12px">
+          Dataset <b>Obesity Levels</b> dari Kaggle — {{ metrics.train_size }} data latih, {{ metrics.test_size }} data uji (80:20 split).
+        </p>
+        <div>
+          {% for cls in metrics.classes %}
+          <span class="badge-class" style="background:rgba(102,126,234,.15); color:#a78bfa; border:1px solid rgba(102,126,234,.3)">{{ cls }}</span>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Proses Backprop -->
+    <div class="col-12">
+      <div class="card-box">
+        <h6 style="font-weight:700; margin-bottom:16px">⚙️ Cara Kerja Backpropagation</h6>
+        <div class="row g-3">
+          <div class="col-md-4">
+            <div style="background:rgba(102,126,234,.08); border-radius:10px; padding:20px; height:100%">
+              <div style="font-size:1.5rem; margin-bottom:8px">1️⃣</div>
+              <div style="font-weight:600; margin-bottom:6px">Forward Propagation</div>
+              <div style="color:var(--muted); font-size:.85rem">Data input diteruskan dari input layer ke hidden layers sampai output layer menggunakan aktivasi ReLU dan Softmax.</div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div style="background:rgba(240,147,251,.08); border-radius:10px; padding:20px; height:100%">
+              <div style="font-size:1.5rem; margin-bottom:8px">2️⃣</div>
+              <div style="font-weight:600; margin-bottom:6px">Hitung Error (Loss)</div>
+              <div style="color:var(--muted); font-size:.85rem">Kesalahan antara prediksi dan label asli dihitung menggunakan <b>Categorical Cross-Entropy Loss</b>.</div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div style="background:rgba(104,211,145,.08); border-radius:10px; padding:20px; height:100%">
+              <div style="font-size:1.5rem; margin-bottom:8px">3️⃣</div>
+              <div style="font-weight:600; margin-bottom:6px">Update Bobot (Adam)</div>
+              <div style="color:var(--muted); font-size:.85rem">Gradient error disebarkan mundur (<i>backprop</i>) dan bobot diperbarui menggunakan optimizer <b>Adam</b>.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Training chart -->
+    <div class="col-12">
+      <div class="card-box">
+        <h6 style="font-weight:700; margin-bottom:16px">📈 Grafik Proses Training</h6>
+        <img src="/static/training_history.png" alt="Training History" style="width:100%; border-radius:8px; max-width:800px; display:block; margin:0 auto"/>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<footer>
+  ObesityAI — Tugas 7 Backpropagation — Modul Kecerdasan Buatan<br/>
+  <span style="font-size:.75rem">Dataset: <a href="https://www.kaggle.com/datasets/fatemehmehrparvar/obesity-levels" target="_blank" style="color:var(--accent)">Kaggle Obesity Levels</a></span>
+</footer>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
